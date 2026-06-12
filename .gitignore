@@ -1,0 +1,7 @@
+# 平文パターンは絶対にコミットしない（Charter §3 Red）
+tier-patterns.private.txt
+
+.env
+__pycache__/
+*.pyc
+.DS_Store
