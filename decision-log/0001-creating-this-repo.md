@@ -73,12 +73,15 @@ ai-autonomy-playbook/
 
 > （Claude Codeが実行後に記入）
 
-- 実行日時:
-- tier_check ローカル実行結果:
-- 初回コミット:
-- リポジトリURL:
-- CI（tier-check）初回実行結果:
-- 計画からの逸脱（あれば理由とともに）:
+- 実行日時: 2026-06-12 22:54 初回コミット作成 / 2026-06-13 公開push・CI確認（JST）
+- tier_check ローカル実行結果: PASS（一致なし・exit 0）。新ソルトでの再生成後にも再実行し PASS を確認
+- 初回コミット: `3ebf81da5e74d94bb2dafbc7e0ed0c36bf599849`
+- リポジトリURL: https://github.com/dkamehat/ai-autonomy-playbook
+- CI（tier-check）初回実行結果: **success（緑・6秒）** — Run: https://github.com/dkamehat/ai-autonomy-playbook/actions/runs/27422027770
+  - 非ブロッキング注記: `actions/checkout@v4` / `actions/setup-python@v5` が Node.js 20 非推奨の警告（2026-06-16以降 Node24 強制予定）。動作・判定には影響なし。将来アクションのバージョン更新で解消する。
+- 計画からの逸脱（理由とともに）:
+  1. **公開手順の順序分離**: HANDOFF原文の `gh repo create --public --source=. --push`（作成と同時にpush）を、**①リポジトリ作成 → ②CI Secret(`TIER_SALT`)登録 → ③push → ④topics付与** の順に分離した。理由: push と同時にCIが起動すると、その時点で Secret 未登録のため `tier_check.py` が exit 2（ERROR）で失敗し、初回CIが赤になる。Secret を先行登録することで初回CIから緑を実現した。本順序分離は人間が 2026-06-12 に承認済み（§2 参照）。
+  2. **ソルトの隔離運用**: `TIER_SALT` の値を実行レーン（Claude Code）のセッション・コマンド・ログに一切通さず、人間がソルト保持端末で `make_patterns.py` / `tier_check.py` / `gh secret set` を実行する運用とした。結果、ソルト値の表示・ファイル書き込みは発生せず（Red回避）、本項に記録すべきソルト関連の逸脱は生じていない。
 
 ---
 
@@ -86,4 +89,6 @@ ai-autonomy-playbook/
 
 > （完了後に1〜3行で）
 
--
+- 統治システムを当のリポジトリ自身に適用し、**計画 → 人間注釈(§2) → 実行 → 記録(§3)** のループを実走させて公開まで完遂した。
+- 教訓: 検査をCI Secretに依存させる場合、**Secret登録を初回pushより前に置く**ことで「初回CIが赤 → 再実行で緑」という不要なノイズを構造的に回避できる（§3 逸脱1）。秘密情報（ソルト）は実行レーンに渡さず人間が保持・適用する分離が、Red違反の余地を最初から消す（§3 逸脱2）。
+- SCR候補: 秘密値の受け渡し手順が画面転記・クリップボード競合を誘発した。修正＝表示工程の排除と、保存検証の手順化。→ `templates/SCR.md` で起票予定。
