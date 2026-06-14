@@ -3,11 +3,31 @@ name: tier-check
 on: [push, pull_request]
 
 jobs:
-  tier-check:
+  # 検出器の no-op 緑化（vacuous PASS）を先に弾く（SCR-007 恒久対策）。
+  # canary が落ちれば tier-check は走らない＝「検出器が壊れた状態での緑」を構造的に不能化。
+  # canary は合成パターン＋テスト用ソルトで動くため TIER_SALT（Secret）を必要としない。
+  #
+  # 境界（重要）: このカナリアが保証するのは「ソルトが整合していれば照合が機能する」こと。
+  # 本番表（.tier-patterns.sha256）と本番 Secret ソルトの *不一致そのもの* は、実ソルトを
+  # カナリアに渡さない設計上、ここでは検出できない。その整合は「表を Secret と同一ソルトで
+  # 再生成する」運用で別途担保する（DL-0001 §3 逸脱3）。「カナリアがある＝ドリフト安全」と
+  # 読み替えない（= 二次的 vacuous 確信の回避）。
+  canary:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5      # Node24
+      - uses: actions/setup-python@v6  # Node24
+        with:
+          python-version: "3.12"
+      - name: Tier-check canary (detector must detect)
+        run: python scripts/test_tier_check_canary.py
+
+  tier-check:
+    needs: canary
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5      # Node24
+      - uses: actions/setup-python@v6  # Node24
         with:
           python-version: "3.12"
       - name: Run tier check

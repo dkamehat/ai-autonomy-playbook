@@ -32,6 +32,15 @@ def norm(s: str) -> str:
     return unicodedata.normalize("NFKC", s).lower()
 
 
+def digest(salt: str, window: str) -> str:
+    """HMAC-SHA256(salt, window) の16進。make_patterns.py のハッシュ経路と同一。
+
+    検出の「照合キー生成」をこの1か所に閉じ込める。カナリア（test_tier_check_canary.py）が
+    同じ関数で合成テーブルを作り、scan の照合が無言で no-op 化していないことを固定する。
+    """
+    return hmac.new(salt.encode(), window.encode(), hashlib.sha256).hexdigest()
+
+
 def load_patterns(root: Path) -> dict[int, set[str]]:
     """`長さ:HMAC16進` 形式のパターン表を読み込む。"""
     table: dict[int, set[str]] = {}
@@ -80,22 +89,44 @@ def scan(text: str, table: dict[int, set[str]], salt: str, reveal: bool):
                 window = stream[i : i + length]
                 matched = cache.get((length, window))
                 if matched is None:
-                    digest = hmac.new(salt.encode(), window.encode(), hashlib.sha256).hexdigest()
-                    matched = digest in hashes
+                    matched = digest(salt, window) in hashes
                     cache[(length, window)] = matched
                 if matched:
                     hits.append((label, i, length, window if reveal else None))
     return hits
 
 
-def main() -> int:
-    root = Path(__file__).resolve().parent.parent
+def run(root: Path, salt: str, reveal: bool) -> int:
+    """root 配下を salt で検査する実際の検出経路（load_patterns→scan→終了コード）。
+
+    パターン未設定は 0（スキップ）、一致ありは 1、一致なしは 0。
+    カナリアはこの関数を合成パターンで叩き、一致時に必ず 1 を返すことを固定する。
+    """
     table = load_patterns(root)
     if not table:
         print("[tier-check] パターン未設定（.tier-patterns.sha256 にエントリなし）。スキップします。")
         return 0
+    total = 0
+    for path, text in iter_text_files(root):
+        for label, pos, length, content in scan(text, table, salt, reveal):
+            total += 1
+            shown = f" 内容: {content}" if reveal else ""
+            print(f"[HIT] {path.relative_to(root)} stream={label} pos={pos} len={length}{shown}")
+    if total:
+        print(f"[tier-check] FAIL: {total} 件のTierパターン一致。公開前に除去してください。", file=sys.stderr)
+        return 1
+    print("[tier-check] PASS: 一致なし。")
+    return 0
+
+
+def main() -> int:
+    root = Path(__file__).resolve().parent.parent
     salt = os.environ.get("TIER_SALT", "")
     if not salt:
+        # パターンが無ければソルト未設定でもスキップ（従来挙動を維持）
+        if not load_patterns(root):
+            print("[tier-check] パターン未設定（.tier-patterns.sha256 にエントリなし）。スキップします。")
+            return 0
         print(
             "[tier-check] ERROR: TIER_SALT が未設定です。"
             "ローカルは環境変数、CIは Actions Secret で設定してください。",
@@ -103,19 +134,7 @@ def main() -> int:
         )
         return 2
     reveal = os.environ.get("TIER_CHECK_REVEAL") == "1"
-
-    total = 0
-    for path, text in iter_text_files(root):
-        for label, pos, length, content in scan(text, table, salt, reveal):
-            total += 1
-            shown = f" 内容: {content}" if reveal else ""
-            print(f"[HIT] {path.relative_to(root)} stream={label} pos={pos} len={length}{shown}")
-
-    if total:
-        print(f"[tier-check] FAIL: {total} 件のTierパターン一致。公開前に除去してください。", file=sys.stderr)
-        return 1
-    print("[tier-check] PASS: 一致なし。")
-    return 0
+    return run(root, salt, reveal)
 
 
 if __name__ == "__main__":
