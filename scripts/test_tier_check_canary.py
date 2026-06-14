@@ -125,6 +125,27 @@ class TestRunEndToEnd(unittest.TestCase):
                     "ソルト不一致でも検出されている（このテストの前提が崩れている）",
                 )
 
+    def test_run_fails_on_empty_table(self):
+        # 残存 vacuous PASS 面の封鎖: 表が空（0エントリ）＋salt設定下で FAIL(3) すること。
+        # ヘッダコメントのみ＝0エントリ（表の空化・破損を模す）。
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / ".tier-patterns.sha256").write_text("# empty table（0 entries）\n", encoding="utf-8")
+            (root / "decoy.txt").write_text("無害なテキスト\n", encoding="utf-8")
+            with contextlib.redirect_stdout(io.StringIO()):
+                code = run(root, TEST_SALT, reveal=False)  # 既定 min_entries=1
+            self.assertEqual(code, 3, "空テーブル（salt設定下）が FAIL(3) にならない＝vacuous PASS 面が残存")
+
+    def test_run_fails_on_truncated_table(self):
+        # 切り詰め検出: エントリは在るが下限未満なら FAIL(3)。閾値ロジックが 0 件以外でも効くこと。
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            _write_pattern_file(root, TEST_SALT, SYNTH)  # 1〜2 エントリ
+            (root / "x.txt").write_text("clean\n", encoding="utf-8")
+            with contextlib.redirect_stdout(io.StringIO()):
+                code = run(root, TEST_SALT, reveal=False, min_entries=999)
+            self.assertEqual(code, 3, "下限未満（切り詰め）が FAIL(3) にならない")
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

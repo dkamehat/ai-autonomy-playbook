@@ -12,9 +12,13 @@
   一致した内容そのものは表示しない。ローカル確認時のみ TIER_CHECK_REVEAL=1 で内容表示
 
 注意: 小規模リポジトリ向けの素朴な実装です。パターンは4文字以上を推奨。
+
+終了コード: 0=一致なし / 1=一致あり / 2=TIER_SALT 未設定 / 3=ハッシュ表が下限未満
+（--min-entries、既定1。表の空化・切り詰め・破損を検出。--min-entries 0 でガード無効化=opt-out）。
 """
 from __future__ import annotations
 
+import argparse
 import hashlib
 import hmac
 import os
@@ -96,16 +100,24 @@ def scan(text: str, table: dict[int, set[str]], salt: str, reveal: bool):
     return hits
 
 
-def run(root: Path, salt: str, reveal: bool) -> int:
+def run(root: Path, salt: str, reveal: bool, min_entries: int = 1) -> int:
     """root 配下を salt で検査する実際の検出経路（load_patterns→scan→終了コード）。
 
-    パターン未設定は 0（スキップ）、一致ありは 1、一致なしは 0。
-    カナリアはこの関数を合成パターンで叩き、一致時に必ず 1 を返すことを固定する。
+    一致ありは 1、一致なしは 0。salt がある（= この関数が呼ばれる）状況で、ハッシュ表の
+    エントリ数が min_entries 未満なら 3（表の空化・切り詰め・破損による vacuous PASS を防ぐ）。
+    カナリアはこの関数を合成パターンで叩き、一致時に必ず 1 を、空表で必ず 3 を返すことを固定する。
     """
     table = load_patterns(root)
-    if not table:
-        print("[tier-check] パターン未設定（.tier-patterns.sha256 にエントリなし）。スキップします。")
-        return 0
+    n_entries = sum(len(hashes) for hashes in table.values())
+    if n_entries < min_entries:
+        # 表が空/切り詰め/破損だと scan は何も検出せず緑になりうる（残存 vacuous PASS 面）。
+        # エントリ数は非秘密（公開ファイルの行数）なので件数のみ表示する（§M6-2）。
+        print(
+            f"[tier-check] FAIL: ハッシュ表のエントリ数 {n_entries} が下限 {min_entries} 未満です。"
+            "表の空化・切り詰め・破損の可能性（vacuous PASS 防止）。",
+            file=sys.stderr,
+        )
+        return 3
     total = 0
     for path, text in iter_text_files(root):
         for label, pos, length, content in scan(text, table, salt, reveal):
@@ -120,6 +132,15 @@ def run(root: Path, salt: str, reveal: bool) -> int:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description="Tierパターン検査（ハッシュ照合方式）")
+    parser.add_argument(
+        "--min-entries",
+        type=int,
+        default=1,
+        help="TIER_SALT 設定時、ハッシュ表のエントリ数がこの数未満なら FAIL（空表の vacuous PASS 防止。既定1）",
+    )
+    args = parser.parse_args()
+
     root = Path(__file__).resolve().parent.parent
     salt = os.environ.get("TIER_SALT", "")
     if not salt:
@@ -134,7 +155,7 @@ def main() -> int:
         )
         return 2
     reveal = os.environ.get("TIER_CHECK_REVEAL") == "1"
-    return run(root, salt, reveal)
+    return run(root, salt, reveal, args.min_entries)
 
 
 if __name__ == "__main__":
