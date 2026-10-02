@@ -60,3 +60,21 @@ Voice command examples:
 - delete
 - access/permission
 - deadline
+
+
+## Koe option
+
+A lightweight menu-bar MVP is available under `company-bootstrap/koe-mac/`.
+
+### Koe path
+`⌃⌥Space → speak → ⌃⌥Space → on-device transcript → operator prompt → clipboard → Gemini`
+
+### Zero-install path
+If company software policy does not yet allow Koe:
+- open Gemini
+- place the cursor in the prompt box
+- use macOS Dictation
+- speak naturally
+- use the public Bootstrap Prompt at the beginning of the working chat
+
+Koe improves this later by making the Operator wrapping consistent and giving you a global hotkey.

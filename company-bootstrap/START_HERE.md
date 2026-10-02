@@ -91,3 +91,17 @@ Workspace-nativeで足りる処理をDifyへ重複実装しない。
 - Delete
 - Permission
 - external send/invite
+
+
+## 7. Koe — voice command bar
+
+If company policy allows running a small unsigned/local app, use:
+`company-bootstrap/koe-mac/`
+
+Koe adds a global `Control + Option + Space` voice capture flow and wraps rough speech into the Company Operator contract.
+
+Until installation is approved, use the **Zero-install path**:
+1. keep Gemini open
+2. use macOS Dictation directly in the prompt box
+3. start the first chat with `BOOTSTRAP_PROMPT.md`
+4. speak rough requests; Gemini should follow the Operator contract
