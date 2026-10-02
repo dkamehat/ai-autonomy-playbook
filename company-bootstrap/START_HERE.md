@@ -122,3 +122,20 @@ Voice/text example:
 > これ案件化して。ゴールと期限と関係者を整理して、Case OSが必要か判定して。必要ならControl Towerの初期状態まで作って。
 
 Case OS should be used for complex cases; do not force it onto one-off simple tasks.
+
+
+## 9. Provision the Company Case OS storage
+
+If Gemini in Sheets is available, use:
+
+`company-bootstrap/PROVISION_CASE_OS_SHEETS.md`
+
+Recommended:
+1. manually create one blank Google Sheet named `BizOps Case OS｜Control Plane`
+2. open Gemini in Sheets
+3. paste the provisioning prompt
+4. review Gemini's build plan
+5. apply it
+6. do not add real case data until the schema/validation review passes
+
+This creates the shared register structure. Do not create one workbook per case.
