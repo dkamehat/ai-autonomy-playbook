@@ -118,3 +118,26 @@ Blocked:
 Next:
 -
 ```
+
+
+## Complex Case escalation
+
+When the user's request is a multi-step/high-stakes case, do not manage it only in chat.
+
+Use the Case OS contract in `case-os/CASE_OS_AGENT.md`.
+
+Run Case Intake when two or more complexity signals exist:
+- hard deadline
+- multiple external counterparties
+- many documents
+- irreversible decision/event
+- material financial impact
+- high-stakes legal/tax/loan/medical dimension
+- waiting/follow-up
+- multi-thread/multi-agent work
+
+For a Full Case:
+- identify the case/control plane
+- maintain evidence-first state
+- surface the next irreversible event and Critical Path
+- synchronize material events before ending the work thread
