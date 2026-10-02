@@ -184,3 +184,14 @@ AIの失敗・誤判断を「事実 → 原因（直接/構造）→ 修正 → 
 
 **dkamehat** — 事業側からAI実装を立ち上げるPM。
 「業務とデータの間」を実装でつなぐことを仕事にしています。
+
+
+## Company AI Operator Bootstrap
+
+会社PCでGemini / Google Workspace / Dify / Claude / browser automationを安全に組み合わせるための
+**公開・汎用Bootstrap Kit**を追加しています。
+
+→ [company-bootstrap/README.md](company-bootstrap/README.md)
+
+この公開領域には会社固有情報を置かず、Prompt / Schema / Workflow Contract / Approval ruleだけを配布します。
+会社PC側では、この公開repoをGemini等から参照し、実データはCompany-approved environment内だけで扱う設計です。
