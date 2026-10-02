@@ -105,3 +105,20 @@ Until installation is approved, use the **Zero-install path**:
 2. use macOS Dictation directly in the prompt box
 3. start the first chat with `BOOTSTRAP_PROMPT.md`
 4. speak rough requests; Gemini should follow the Operator contract
+
+
+## 8. Complex project / case
+
+When work becomes a multi-step, high-stakes case, load:
+
+`case-os/CASE_OS_AGENT.md`
+
+Then use:
+
+`case-os/prompts/01_case_intake.md`
+
+Voice/text example:
+
+> これ案件化して。ゴールと期限と関係者を整理して、Case OSが必要か判定して。必要ならControl Towerの初期状態まで作って。
+
+Case OS should be used for complex cases; do not force it onto one-off simple tasks.
