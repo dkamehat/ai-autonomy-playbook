@@ -1,0 +1,42 @@
+name: koe-mac-ci
+
+on:
+  push:
+    branches:
+      - koe-mac-mvp
+    paths:
+      - "company-bootstrap/koe-mac/**"
+      - ".github/workflows/koe-mac-ci.yml"
+  pull_request:
+    paths:
+      - "company-bootstrap/koe-mac/**"
+      - ".github/workflows/koe-mac-ci.yml"
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Swift version
+        run: swiftc --version
+
+      - name: Shell check
+        run: bash -n company-bootstrap/koe-mac/build.sh
+
+      - name: Build Koe.app
+        run: |
+          chmod +x company-bootstrap/koe-mac/build.sh
+          company-bootstrap/koe-mac/build.sh
+
+      - name: Verify bundle
+        run: |
+          test -x company-bootstrap/koe-mac/dist/Koe.app/Contents/MacOS/Koe
+          plutil -lint company-bootstrap/koe-mac/dist/Koe.app/Contents/Info.plist
+
+      - name: Upload unsigned app
+        uses: actions/upload-artifact@v4
+        with:
+          name: Koe-unsigned
+          path: company-bootstrap/koe-mac/dist/Koe.app
+          retention-days: 7
