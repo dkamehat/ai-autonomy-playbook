@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Case OS Bootstrap",
+  "type": "object",
+  "required": [
+    "name",
+    "case_type",
+    "pmo_mode",
+    "sensitivity",
+    "mission",
+    "primary_sot",
+    "complexity_signals",
+    "next_actions"
+  ],
+  "properties": {
+    "name": {"type": "string", "minLength": 1},
+    "case_id_candidate": {"type": "string"},
+    "case_type": {
+      "enum": [
+        "Transaction / Purchase",
+        "Legal / Administration",
+        "Finance",
+        "Career / Onboarding",
+        "Business / Revenue",
+        "Health / Procedure",
+        "Research / Decision",
+        "Other"
+      ]
+    },
+    "pmo_mode": {
+      "enum": ["Simple", "Full Case OS", "Dedicated Legacy"]
+    },
+    "sensitivity": {
+      "enum": ["Public", "Personal", "Sensitive", "Highly Sensitive"]
+    },
+    "mission": {"type": "string"},
+    "current_state": {"type": "string"},
+    "primary_sot": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "complexity_signals": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "hard_deadline",
+          "multiple_counterparties",
+          "many_documents",
+          "irreversible_event",
+          "material_financial_impact",
+          "high_stakes_domain",
+          "waiting_followup",
+          "multi_thread_agent"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "hard_dates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["label", "certainty"],
+        "properties": {
+          "label": {"type": "string"},
+          "date": {"type": ["string", "null"], "format": "date"},
+          "certainty": {
+            "enum": ["Confirmed", "Reported", "Estimated", "Unknown"]
+          },
+          "evidence_ref": {"type": "string"}
+        }
+      }
+    },
+    "next_irreversible_event": {
+      "type": ["object", "null"],
+      "properties": {
+        "label": {"type": "string"},
+        "date": {"type": ["string", "null"], "format": "date"},
+        "why_material": {"type": "string"}
+      }
+    },
+    "initial_gate": {"type": ["object", "null"]},
+    "critical_path_candidates": {"type": "array", "items": {"type": "object"}},
+    "required_documents": {"type": "array", "items": {"type": "object"}},
+    "initial_raid": {"type": "array", "items": {"type": "object"}},
+    "stakeholders": {"type": "array", "items": {"type": "object"}},
+    "open_decisions": {"type": "array", "items": {"type": "object"}},
+    "automation_candidates": {"type": "array", "items": {"type": "string"}},
+    "missing_evidence": {"type": "array", "items": {"type": "string"}},
+    "next_actions": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "items": {"type": "string"}
+    }
+  },
+  "additionalProperties": true
+}
