@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Case OS Event",
+  "type": "object",
+  "required": ["case_id", "source_type", "authority", "certainty", "summary"],
+  "properties": {
+    "case_id": {"type": "string", "minLength": 1},
+    "source_type": {
+      "enum": ["Email", "Document", "Call", "Meeting", "Voice", "Web", "Form", "System", "Manual"]
+    },
+    "occurred_at": {"type": ["string", "null"]},
+    "authority": {
+      "enum": ["Official", "Direct", "Reported", "Derived", "Unverified"]
+    },
+    "certainty": {
+      "enum": ["Confirmed", "Reported", "Estimated", "Unknown"]
+    },
+    "sensitivity": {
+      "enum": ["Public", "Personal", "Sensitive", "Highly Sensitive"]
+    },
+    "source_ref": {"type": "string"},
+    "source_key": {"type": "string"},
+    "summary": {"type": "string"},
+    "objects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind", "canonical_key", "payload"],
+        "properties": {
+          "kind": {
+            "enum": ["Task", "Document", "Decision", "Risk", "Assumption", "Issue", "Dependency", "Gate", "Communication", "Submission", "Change", "Stakeholder"]
+          },
+          "canonical_key": {"type": "string"},
+          "payload": {"type": "object"}
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}
