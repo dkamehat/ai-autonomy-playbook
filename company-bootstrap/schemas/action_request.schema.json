@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Company AI Operator Action Request",
+  "type": "object",
+  "required": ["intent", "risk_class", "requested_action"],
+  "properties": {
+    "intent": {"type": "string"},
+    "source_refs": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "risk_class": {
+      "enum": ["LOW", "REVIEW", "PROTECTED"]
+    },
+    "requested_action": {
+      "enum": [
+        "READ",
+        "SUMMARIZE",
+        "DRAFT",
+        "CREATE_TASK",
+        "CREATE_CALENDAR_EVENT",
+        "PROPOSE_PMO_UPDATE",
+        "APPLY_APPROVED_UPDATE",
+        "NOTIFY",
+        "BROWSER_ACTION"
+      ]
+    },
+    "approval_required": {"type": "boolean"},
+    "workstreams": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "payload": {"type": "object"}
+  },
+  "additionalProperties": true
+}
