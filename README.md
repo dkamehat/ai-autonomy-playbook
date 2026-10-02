@@ -195,3 +195,12 @@ AIの失敗・誤判断を「事実 → 原因（直接/構造）→ 修正 → 
 
 この公開領域には会社固有情報を置かず、Prompt / Schema / Workflow Contract / Approval ruleだけを配布します。
 会社PC側では、この公開repoをGemini等から参照し、実データはCompany-approved environment内だけで扱う設計です。
+
+
+## Case OS — Project Factory
+
+並木台PMOのような複雑案件を、案件ごとにDBを複製せず運用する共通Project Control Standard。
+
+→ [case-os/README.md](case-os/README.md)
+
+NotionをControl Plane、Drive/Gmail/公式システムを原本SoT、GitHubをAgent/Prompt/Schema層として分離します。
